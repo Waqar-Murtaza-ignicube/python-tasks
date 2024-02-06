@@ -4,7 +4,7 @@ from datetime import datetime
 from termcolor import colored
 
 year = input("Enter a year to find the highest, lowest temperate, and humditiy with day: ")
-months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Oct", "Nov", "Dec"]
+months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 #global variables for appending the list with temp and humid
 maxTemp = []
