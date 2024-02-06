@@ -98,47 +98,49 @@ with open(f"weatherdata/lahore_weather_{year}_{month}.txt", encoding="utf-8") as
 
 
     #calculating highest temp, humid and lowest temp from the list we made
-    initAvgMaxTemp = avgMaxTemp[0]
-    for i, avgMaxTempp in enumerate(avgMaxTemp):
-        initAvgMaxTemp = max(initAvgMaxTemp, avgMaxTempp)
+    if not avgMaxTemp and not avgMaxHumid and not avgLowTemp:
+        print(f"The report for {month} is not available currently")
+    else:
+        initAvgMaxTemp = avgMaxTemp[0]
+        for i, avgMaxTempp in enumerate(avgMaxTemp):
+            initAvgMaxTemp = max(initAvgMaxTemp, avgMaxTempp)
 
-    initAvgHumid = avgMaxHumid[0]
-    for i, avgMaxHumidd in enumerate(avgMaxHumid):
-        initAvgHumid = max(initAvgHumid, avgMaxHumidd)
+        initAvgHumid = avgMaxHumid[0]
+        for i, avgMaxHumidd in enumerate(avgMaxHumid):
+            initAvgHumid = max(initAvgHumid, avgMaxHumidd)
 
-    initAvgLowTemp = avgLowTemp[0]
-    for i, avgLowTempp in enumerate(avgLowTemp):
-        initAvgLowTemp = min(initAvgLowTemp, avgLowTempp)
+        initAvgLowTemp = avgLowTemp[0]
+        for i, avgLowTempp in enumerate(avgLowTemp):
+            initAvgLowTemp = min(initAvgLowTemp, avgLowTempp)
 
-    MAXTEMPINDEX = 0
-    initMaxTemp = monMaxTemp[0]
-    for i, monMaxTempp in enumerate(monMaxTemp):
-        initMaxTemp = max(initMaxTemp, monMaxTempp)
-        MAXTEMPINDEX = monMaxTemp.index(initMaxTemp)
+        MAXTEMPINDEX = 0
+        initMaxTemp = monMaxTemp[0]
+        for i, monMaxTempp in enumerate(monMaxTemp):
+            initMaxTemp = max(initMaxTemp, monMaxTempp)
+            MAXTEMPINDEX = monMaxTemp.index(initMaxTemp)
 
-    initLowTemp = monLowTemp[0]
-    for i, monLowTempp in enumerate(monLowTemp):
-        initLowTemp = min(initLowTemp, monLowTempp)
+        initLowTemp = monLowTemp[0]
+        for i, monLowTempp in enumerate(monLowTemp):
+            initLowTemp = min(initLowTemp, monLowTempp)
+        # printing the result
+        print(f"Highest Average: {initAvgMaxTemp}C ")
+        print(f"Lowest Average: {initAvgLowTemp}C ")
+        print(f"Average Humidity: {initAvgHumid}% ")
 
-    # printing the result
-    print(f"Highest Average: {initAvgMaxTemp}C ")
-    print(f"Lowest Average: {initAvgLowTemp}C ")
-    print(f"Average Humidity: {initAvgHumid}% ")
+        DATE_FORMAT = "%Y-%m-%d"
 
-    DATE_FORMAT = "%Y-%m-%d"
+        mtfDate = datetime.strptime(monIndex[MAXTEMPINDEX], DATE_FORMAT).strftime("%B %Y")
+        print(mtfDate)
 
-    mtfDate = datetime.strptime(monIndex[MAXTEMPINDEX], DATE_FORMAT).strftime("%B %Y")
-    print(mtfDate)
+        dayIndex = []
+        for h in monIndex:
+            ltfDate = datetime.strptime(h, DATE_FORMAT).strftime("%d")
+            dayIndex.append(ltfDate)
 
-    dayIndex = []
-    for h in monIndex:
-        ltfDate = datetime.strptime(h, DATE_FORMAT).strftime("%d")
-        dayIndex.append(ltfDate)
+        #printing the horizontal bar chart with colors
+        for j, k, l in zip(dayIndex, monMaxTemp, monLowTemp):
+            print(f"{j} {colored('+' * k, 'red')} {k:2}C")
+            print(f"{j} {colored('+' * l, 'blue')} {l:1}C")
 
-    #printing the horizontal bar chart with colors
-    for j, k, l in zip(dayIndex, monMaxTemp, monLowTemp):
-        print(f"{j} {colored('+' * k, 'red')} {k:2}C")
-        print(f"{j} {colored('+' * l, 'blue')} {l:1}C")
-
-    for j, k, l in zip(dayIndex, monMaxTemp, monLowTemp):
-        print(f"{j} {colored('+' * l, 'blue')}{colored('+' * k, 'red')} {l:1}C - {k:2}C")
+        for j, k, l in zip(dayIndex, monMaxTemp, monLowTemp):
+            print(f"{j} {colored('+' * l, 'blue')}{colored('+' * k, 'red')} {l:1}C - {k:2}C")
