@@ -1,5 +1,5 @@
 """module datetime to get format object and colored to get colored object for console"""
-
+import os
 from datetime import datetime
 from termcolor import colored
 
@@ -13,22 +13,27 @@ maxHumid = []
 Index = []
 
 for i in months:
-    with open(f"weatherdata/lahore_weather_{year}_{i}.txt", encoding="utf-8") as openFile:
-        reportFile = openFile.readlines()
-        if reportFile and len(reportFile) > 1 and not reportFile[0].strip():
-            reportFile = reportFile[2:-1]
-            for j in reportFile:
-                temp = j.split(",")
-                if temp[1] == "":
-                    continue
-                if temp[3] == "":
-                    continue
-                if temp[7] == "":
-                    continue
-                maxTemp.append(int(temp[1]))
-                lowTemp.append(int(temp[3]))
-                maxHumid.append(int(temp[7]))
-                Index.append(temp[0])
+    filePath = f"weatherdata/lahore_weather_{year}_{i}.txt"
+    if os.path.exists(filePath):
+        with open(filePath, encoding="utf-8") as openFile:
+            reportFile = openFile.readlines()
+            if reportFile and len(reportFile) > 1 and not reportFile[0].strip():
+                reportFile = reportFile[2:-1]
+                for j in reportFile:
+                    temp = j.split(",")
+                    if temp[1] == "":
+                        continue
+                    if temp[3] == "":
+                        continue
+                    if temp[7] == "":
+                        continue
+                    maxTemp.append(int(temp[1]))
+                    lowTemp.append(int(temp[3]))
+                    maxHumid.append(int(temp[7]))
+                    Index.append(temp[0])
+    else:
+        print(f"Report for {i} is not available.")
+
 
 # calculating highest temp, humid and lowest temp from the list we made
 MAXTEMPINDEX = 0
@@ -71,76 +76,80 @@ monMaxTemp = []
 monLowTemp = []
 monIndex = []
 
-with open(f"weatherdata/lahore_weather_{year}_{month}.txt", encoding="utf-8") as openFile:
-    reportFile = openFile.readlines()
-    if reportFile and len(reportFile) > 1 and not reportFile[0].strip():
-        reportFile = reportFile[2:-1]
-        for i in reportFile:
-            temp = i.split(",")
-            #checking if the column has an empty value/string
-            if temp[2] == "":
-                continue
-            if temp[8] == "":
-                continue
-            if temp[1] == "":
-                continue
-            if temp[3] == "":
-                continue
-            if temp[7] == "":
-                continue
-            monMaxTemp.append(int(temp[1]))
-            monLowTemp.append(int(temp[3]))
-            maxHumid.append(int(temp[7]))
-            avgMaxTemp.append(int(temp[2]))
-            avgLowTemp.append(int(temp[2]))
-            avgMaxHumid.append(int(temp[8]))
-            monIndex.append(temp[0])
+filePath = f"weatherdata/lahore_weather_{year}_{month}.txt"
+if os.path.exists(filePath):
+    with open(filePath, encoding="utf-8") as openFile:
+        reportFile = openFile.readlines()
+        if reportFile and len(reportFile) > 1 and not reportFile[0].strip():
+            reportFile = reportFile[2:-1]
+            for i in reportFile:
+                temp = i.split(",")
+                #checking if the column has an empty value/string
+                if temp[2] == "":
+                    continue
+                if temp[8] == "":
+                    continue
+                if temp[1] == "":
+                    continue
+                if temp[3] == "":
+                    continue
+                if temp[7] == "":
+                    continue
+                monMaxTemp.append(int(temp[1]))
+                monLowTemp.append(int(temp[3]))
+                maxHumid.append(int(temp[7]))
+                avgMaxTemp.append(int(temp[2]))
+                avgLowTemp.append(int(temp[2]))
+                avgMaxHumid.append(int(temp[8]))
+                monIndex.append(temp[0])
 
 
-    #calculating highest temp, humid and lowest temp from the list we made
-    if not avgMaxTemp and not avgMaxHumid and not avgLowTemp:
-        print(f"The report for {month} is not available currently")
-    else:
-        initAvgMaxTemp = avgMaxTemp[0]
-        for i, avgMaxTempp in enumerate(avgMaxTemp):
-            initAvgMaxTemp = max(initAvgMaxTemp, avgMaxTempp)
+        #calculating highest temp, humid and lowest temp from the list we made
+        if not avgMaxTemp and not avgMaxHumid and not avgLowTemp:
+            print(f"The report for {month} is not available currently")
+        else:
+            initAvgMaxTemp = avgMaxTemp[0]
+            for i, avgMaxTempp in enumerate(avgMaxTemp):
+                initAvgMaxTemp = max(initAvgMaxTemp, avgMaxTempp)
 
-        initAvgHumid = avgMaxHumid[0]
-        for i, avgMaxHumidd in enumerate(avgMaxHumid):
-            initAvgHumid = max(initAvgHumid, avgMaxHumidd)
+            initAvgHumid = avgMaxHumid[0]
+            for i, avgMaxHumidd in enumerate(avgMaxHumid):
+                initAvgHumid = max(initAvgHumid, avgMaxHumidd)
 
-        initAvgLowTemp = avgLowTemp[0]
-        for i, avgLowTempp in enumerate(avgLowTemp):
-            initAvgLowTemp = min(initAvgLowTemp, avgLowTempp)
+            initAvgLowTemp = avgLowTemp[0]
+            for i, avgLowTempp in enumerate(avgLowTemp):
+                initAvgLowTemp = min(initAvgLowTemp, avgLowTempp)
 
-        MAXTEMPINDEX = 0
-        initMaxTemp = monMaxTemp[0]
-        for i, monMaxTempp in enumerate(monMaxTemp):
-            initMaxTemp = max(initMaxTemp, monMaxTempp)
-            MAXTEMPINDEX = monMaxTemp.index(initMaxTemp)
+            MAXTEMPINDEX = 0
+            initMaxTemp = monMaxTemp[0]
+            for i, monMaxTempp in enumerate(monMaxTemp):
+                initMaxTemp = max(initMaxTemp, monMaxTempp)
+                MAXTEMPINDEX = monMaxTemp.index(initMaxTemp)
 
-        initLowTemp = monLowTemp[0]
-        for i, monLowTempp in enumerate(monLowTemp):
-            initLowTemp = min(initLowTemp, monLowTempp)
-        # printing the result
-        print(f"Highest Average: {initAvgMaxTemp}C ")
-        print(f"Lowest Average: {initAvgLowTemp}C ")
-        print(f"Average Humidity: {initAvgHumid}% ")
+            initLowTemp = monLowTemp[0]
+            for i, monLowTempp in enumerate(monLowTemp):
+                initLowTemp = min(initLowTemp, monLowTempp)
+            # printing the result
+            print(f"Highest Average: {initAvgMaxTemp}C ")
+            print(f"Lowest Average: {initAvgLowTemp}C ")
+            print(f"Average Humidity: {initAvgHumid}% ")
 
-        DATE_FORMAT = "%Y-%m-%d"
+            DATE_FORMAT = "%Y-%m-%d"
 
-        mtfDate = datetime.strptime(monIndex[MAXTEMPINDEX], DATE_FORMAT).strftime("%B %Y")
-        print(mtfDate)
+            mtfDate = datetime.strptime(monIndex[MAXTEMPINDEX], DATE_FORMAT).strftime("%B %Y")
+            print(mtfDate)
 
-        dayIndex = []
-        for h in monIndex:
-            ltfDate = datetime.strptime(h, DATE_FORMAT).strftime("%d")
-            dayIndex.append(ltfDate)
+            dayIndex = []
+            for h in monIndex:
+                ltfDate = datetime.strptime(h, DATE_FORMAT).strftime("%d")
+                dayIndex.append(ltfDate)
 
-        #printing the horizontal bar chart with colors
-        for j, k, l in zip(dayIndex, monMaxTemp, monLowTemp):
-            print(f"{j} {colored('+' * k, 'red')} {k:2}C")
-            print(f"{j} {colored('+' * l, 'blue')} {l:1}C")
+            #printing the horizontal bar chart with colors
+            for j, k, l in zip(dayIndex, monMaxTemp, monLowTemp):
+                print(f"{j} {colored('+' * k, 'red')} {k:2}C")
+                print(f"{j} {colored('+' * l, 'blue')} {l:1}C")
 
-        for j, k, l in zip(dayIndex, monMaxTemp, monLowTemp):
-            print(f"{j} {colored('+' * l, 'blue')}{colored('+' * k, 'red')} {l:1}C - {k:2}C")
+            for j, k, l in zip(dayIndex, monMaxTemp, monLowTemp):
+                print(f"{j} {colored('+' * l, 'blue')}{colored('+' * k, 'red')} {l:1}C - {k:2}C")
+else:
+    print(f"Report for {month} not available")
