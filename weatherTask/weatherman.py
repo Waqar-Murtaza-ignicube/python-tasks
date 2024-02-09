@@ -11,6 +11,7 @@ months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", 
 data = []
 
 def yearly_weather_data(year, folderpath):
+    """Function to read yearly data"""
     for i in months:
         file_path = os.path.join(folderpath, f"lahore_weather_{year}_{i}.txt")
         if not os.path.exists(file_path):
@@ -29,6 +30,7 @@ def yearly_weather_data(year, folderpath):
                     })
 
 def monthly_weather_data(year, month, folderpath):
+    """Function to read monthly data"""
     month_name = calendar.month_abbr[int(month)]
     file_path = os.path.join(folderpath, f"lahore_weather_{year}_{month_name}.txt")
     if not os.path.exists(file_path):
@@ -50,33 +52,69 @@ def monthly_weather_data(year, month, folderpath):
     return monthly_data
 
 def highest_lowest_temperature(d):
-    highest_temp = max(d, key=lambda x: x['temp_max'])
-    lowest_temp = min(d, key=lambda x: x['temp_min'])
+    """Function to find highest and lowest temperature data"""
+    if not d:
+        return None
+
+    highest_temp = d[0]
+    lowest_temp = d[0]
+
+    for data_point in d:
+        if data_point['temp_max'] > highest_temp['temp_max']:
+            highest_temp = data_point
+        if data_point['temp_min'] < lowest_temp['temp_min']:
+            lowest_temp = data_point
+
     return highest_temp, lowest_temp
 
-def highest_lowest_humidity(d):
-    highest_humidity = max(d, key=lambda x: x['humidity'])
-    return highest_humidity
+def highest_humidity(d):
+    """Function to get highest humidity data"""
+    if not d:
+        return None
+
+    high_humidity = d[0]
+
+    for i in d:
+        if i['humidity'] > high_humidity['humidity']:
+            high_humidity = i
+
+    return high_humidity
 
 def average_data(d):
+    """Function to get average temperature and humidity data"""
     if not d:
-        return None, None, None
-    avg_temp_max = sum(d['temp_max'] for d in d) / len(d)
-    avg_temp_min = sum(d['temp_min'] for d in d) / len(d)
-    avg_humidity = sum(d['humidity'] for d in d) / len(d)
+        return None
+
+    temp_max = 0
+    temp_min = 0
+    humidity = 0
+
+    for i in d:
+        temp_max += i['temp_max']
+        temp_min += i['temp_min']
+        humidity += i['humidity']
+
+    data_points = len(d)
+    avg_temp_max = temp_max / data_points
+    avg_temp_min = temp_min / data_points
+    avg_humidity = humidity / data_points
+
     return avg_temp_max, avg_temp_min, avg_humidity
 
 def draw_bar_chart(chart_data):
+    """Function to get chart data"""
     for d in chart_data:
         print(f"{d['date']} {colored('+' * d['temp_max'], 'red')} {d['temp_max']}C")
         print(f"{d['date']} {colored('+' * d['temp_min'], 'blue')} {d['temp_min']}C")
 
 def draw_singleline_bar_chart(chart_data):
+    """Function to get singleline chart data"""
     for d in chart_data:
         print(f"{d['date']} {colored('+' * d['temp_min'], 'blue')}"
         f"{colored('+' * d['temp_max'], 'red')} {d['temp_min']}C - {d['temp_max']}C")
 
 def main():
+    """Main function defines arguments and its use cases"""
     parser = argparse.ArgumentParser(description="Generate weather reports.")
     parser.add_argument("-e", "--year", type=int,
     help="Get highest, lowest temperature, and humidity for a given year")
@@ -95,16 +133,16 @@ def main():
         yearly_data = data
         if yearly_data:
             highest_temp, lowest_temp = highest_lowest_temperature(yearly_data)
-            highest_humidity= highest_lowest_humidity(yearly_data)
+            highest_humid= highest_humidity(yearly_data)
             print(f"Highest: {highest_temp['temp_max']}C on {highest_temp['date']}")
             print(f"Lowest: {lowest_temp['temp_min']}C on {lowest_temp['date']}")
-            print(f"Humid: {highest_humidity['humidity']}% on {highest_humidity['date']}")
+            print(f"Humid: {highest_humid['humidity']}% on {highest_humid['date']}")
         else:
             print("No data available for the specified year.")
 
     elif args.avg:
         year, month = args.avg.split('/')
-        month = '{:01d}'.format(int(month)) 
+        month = '{:01d}'.format(int(month))
         monthly_data = monthly_weather_data(year, month, args.path)
         if monthly_data:
             avg_temp_max, avg_temp_min, avg_humidity = average_data(monthly_data)
@@ -116,7 +154,7 @@ def main():
 
     elif args.chart:
         year, month = args.chart.split('/')
-        month = '{:01d}'.format(int(month)) 
+        month = '{:01d}'.format(int(month))
         chart_data = monthly_weather_data(year, month, args.path)
         if chart_data:
             print(f"{datetime.strptime(month, '%m').strftime(f'%B {year}')}")
@@ -126,7 +164,7 @@ def main():
 
     elif args.chartbar:
         year, month = args.chartbar.split('/')
-        month = '{:01d}'.format(int(month)) 
+        month = '{:01d}'.format(int(month))
         chart_data = monthly_weather_data(year, month, args.path)
         if chart_data:
             print(f"{datetime.strptime(month, '%m').strftime(f'%B {year}')}")
