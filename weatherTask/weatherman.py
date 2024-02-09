@@ -59,11 +59,11 @@ def highest_lowest_temperature(d):
     highest_temp = d[0]
     lowest_temp = d[0]
 
-    for data_point in d:
-        if data_point['temp_max'] > highest_temp['temp_max']:
-            highest_temp = data_point
-        if data_point['temp_min'] < lowest_temp['temp_min']:
-            lowest_temp = data_point
+    for i in d:
+        if i['temp_max'] > highest_temp['temp_max']:
+            highest_temp = i
+        if i['temp_min'] < lowest_temp['temp_min']:
+            lowest_temp = i
 
     return highest_temp, lowest_temp
 
@@ -160,7 +160,7 @@ def main():
             print(f"{datetime.strptime(month, '%m').strftime(f'%B {year}')}")
             draw_bar_chart(chart_data)
         else:
-            print(f"No data available f or {month}/{year}.")
+            print(f"No data available for {month}/{year}.")
 
     elif args.chartbar:
         year, month = args.chartbar.split('/')
