@@ -1,4 +1,5 @@
 """module datetime to get format object and colored to get colored object for console"""
+
 import os
 from datetime import datetime
 import argparse
@@ -9,9 +10,9 @@ months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", 
 
 data = []
 
-def yearly_weather_data(year):
+def yearly_weather_data(year, folderpath):
     for i in months:
-        file_path = f"weatherdata/lahore_weather_{year}_{i}.txt"
+        file_path = os.path.join(folderpath, f"lahore_weather_{year}_{i}.txt")
         if not os.path.exists(file_path):
             return None
 
@@ -27,10 +28,9 @@ def yearly_weather_data(year):
                         'humidity': int(temp[7])
                     })
 
-def monthly_weather_data(year, month):
+def monthly_weather_data(year, month, folderpath):
     month_name = calendar.month_abbr[int(month)]
-    file_path = f"weatherdata/lahore_weather_{year}_{month_name}.txt"
-    print(file_path)
+    file_path = os.path.join(folderpath, f"lahore_weather_{year}_{month_name}.txt")
     if not os.path.exists(file_path):
         return None
     monthly_data = []
@@ -71,6 +71,7 @@ def draw_bar_chart(chart_data):
         print(f"{d['date']} {colored('+' * d['temp_max'], 'red')} {d['temp_max']}C")
         print(f"{d['date']} {colored('+' * d['temp_min'], 'blue')} {d['temp_min']}C")
 
+def draw_singleline_bar_chart(chart_data):
     for d in chart_data:
         print(f"{d['date']} {colored('+' * d['temp_min'], 'blue')}"
         f"{colored('+' * d['temp_max'], 'red')} {d['temp_min']}C - {d['temp_max']}C")
@@ -83,12 +84,14 @@ def main():
     help="Get average temperature and humidity for a given month")
     parser.add_argument("-c", "--chart", metavar=("year/month"),
     help="Draw a horizontal bar chart for a given month")
-    #parser.add_argument("path", help="give a folderpath")
+    parser.add_argument("-cb", "--chartbar", metavar=("year/month"),
+    help="Draw a horizontal bar chart for a given month")
+    parser.add_argument("path", type=str, help="Path to the weather data folder")
 
     args = parser.parse_args()
 
     if args.year:
-        yearly_weather_data(args.year)
+        yearly_weather_data(args.year, args.path)
         yearly_data = data
         if yearly_data:
             highest_temp, lowest_temp = highest_lowest_temperature(yearly_data)
@@ -101,7 +104,8 @@ def main():
 
     elif args.avg:
         year, month = args.avg.split('/')
-        monthly_data = monthly_weather_data(year, month)
+        month = '{:01d}'.format(int(month)) 
+        monthly_data = monthly_weather_data(year, month, args.path)
         if monthly_data:
             avg_temp_max, avg_temp_min, avg_humidity = average_data(monthly_data)
             print(f"Highest Average: {avg_temp_max:.0f}C")
@@ -112,10 +116,21 @@ def main():
 
     elif args.chart:
         year, month = args.chart.split('/')
-        chart_data = monthly_weather_data(year, month)
+        month = '{:01d}'.format(int(month)) 
+        chart_data = monthly_weather_data(year, month, args.path)
         if chart_data:
             print(f"{datetime.strptime(month, '%m').strftime(f'%B {year}')}")
             draw_bar_chart(chart_data)
+        else:
+            print(f"No data available f or {month}/{year}.")
+
+    elif args.chartbar:
+        year, month = args.chartbar.split('/')
+        month = '{:01d}'.format(int(month)) 
+        chart_data = monthly_weather_data(year, month, args.path)
+        if chart_data:
+            print(f"{datetime.strptime(month, '%m').strftime(f'%B {year}')}")
+            draw_singleline_bar_chart(chart_data)
         else:
             print(f"No data available for {month}/{year}.")
 
