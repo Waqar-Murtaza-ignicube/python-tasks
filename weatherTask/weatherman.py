@@ -26,15 +26,13 @@ class WeatherReport:
             lines = file.readlines()[1:-1]
             report_file = csv.DictReader(lines)
             for row in report_file:
-                if row["Max TemperatureC"] == '':
-                    continue
-                if row["Min TemperatureC"] == '':
-                    continue
-                if row["Max Humidity"] == '':
+                fields = ["Max TemperatureC", "Min TemperatureC", "Max Humidity"]
+                if any(row[field] == '' for field in fields):
                     continue
                 row['Max TemperatureC'] = int(row['Max TemperatureC'])
                 row['Min TemperatureC'] = int(row['Min TemperatureC'])
                 row['Max Humidity'] = int(row['Max Humidity'])
+                row['PKT'] = datetime.strptime(row['PKT'], '%Y-%m-%d')
                 data.append(row)
         return data
 
@@ -98,7 +96,7 @@ class WeatherReport:
     def draw_bar_chart(self, chart_data, chart_type):
         """method to get bar chart data"""
         for index in chart_data:
-            date = datetime.strptime(index['PKT'], '%Y-%m-%d').strftime('%d')
+            date = index['PKT'].strftime('%d')
             if chart_type == "double-line":
                 print(f"{date} {colored('+' * index['Max TemperatureC'], 'red' )}"
                 f" {index['Max TemperatureC']}C")
@@ -127,9 +125,9 @@ def main():
         if data:
             cal_data = data.data_filepath("yearly")
             highest_temp, lowest_temp, highest_humid = data.high_low_temp(cal_data)
-            max_date = datetime.strptime(highest_temp['PKT'], '%Y-%m-%d').strftime('%B %d')
-            low_date = datetime.strptime(lowest_temp['PKT'], '%Y-%m-%d').strftime('%B %d')
-            high_date = datetime.strptime(highest_humid['PKT'], '%Y-%m-%d').strftime('%B %d')
+            max_date = highest_temp['PKT'].strftime('%B %d')
+            low_date = lowest_temp['PKT'].strftime('%B %d')
+            high_date = highest_humid['PKT'].strftime('%B %d')
             print(f"Highest: {highest_temp['Max TemperatureC']}C on {max_date}")
             print(f"Lowest: {lowest_temp['Min TemperatureC']}C on {low_date}")
             print(f"Humid: {highest_humid['Max Humidity']}% on {high_date}")
