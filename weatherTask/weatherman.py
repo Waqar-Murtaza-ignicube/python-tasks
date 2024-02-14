@@ -128,19 +128,20 @@ class PrintReport:
 
     def print_temp_chart(self, chart_data, chart_type):
         """method to print bar chart data"""
+        print(f"{datetime.strptime(self.month, '%m').strftime(f'%B {self.year}')}")
         for temp in chart_data:
             date_key = 'PKT' if 'PKT' in temp else 'PKST'
             date = temp[date_key].strftime('%d')
             if chart_type == "double-line":
                 print(f"{date} {colored('+' * temp['Max TemperatureC'], 'red' )}"
-                    f" {temp['Max TemperatureC']}C")
+                      f" {temp['Max TemperatureC']}C")
                 print(f"{date} {colored('+' * temp['Min TemperatureC'], 'blue')}"
-                    f" {temp['Min TemperatureC']}C")
+                      f" {temp['Min TemperatureC']}C")
 
             elif chart_type == "single-line":
                 print(f"{date} {colored('+' * temp['Min TemperatureC'], 'blue')}"
-                    f"{colored('+' * temp['Max TemperatureC'], 'red')}"
-                    f" {temp['Min TemperatureC']}C - {temp['Max TemperatureC']}C")
+                      f"{colored('+' * temp['Max TemperatureC'], 'red')}"
+                      f" {temp['Min TemperatureC']}C - {temp['Max TemperatureC']}C")
 
     def print_no_data_avail(self):
         """method to print if data is not available"""
