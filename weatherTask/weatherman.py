@@ -9,11 +9,12 @@ from termcolor import colored
 
 months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
+
 class WeatherReport:
     """class to pair up similar set of functionality"""
-    def __init__(self, year, folderpath, month):
+    def __init__(self, year, folder_path, month):
         self.year = year
-        self.folderpath = folderpath
+        self.folder_path = folder_path
         self.month = month
 
     def read_weather_data(self, file_path):
@@ -23,16 +24,24 @@ class WeatherReport:
 
         data = []
         with open(file_path, encoding="utf-8") as file:
-            lines = file.readlines()[1:-1]
+            lines = []
+            for line in file:
+                stripped_line = line.strip()
+                if stripped_line:
+                    lines.append(stripped_line)
+
             report_file = csv.DictReader(lines)
             for row in report_file:
                 fields = ["Max TemperatureC", "Min TemperatureC", "Max Humidity"]
-                if any(row[field] == '' for field in fields):
+                date_key = 'PKT' if 'PKT' in row else 'PKST'
+                # Skip the row if any of its fields have a None value or are empty strings
+                if any(row[field] is None or row[field] == '' for field in fields):
                     continue
+
                 row['Max TemperatureC'] = int(row['Max TemperatureC'])
                 row['Min TemperatureC'] = int(row['Min TemperatureC'])
                 row['Max Humidity'] = int(row['Max Humidity'])
-                row['PKT'] = datetime.strptime(row['PKT'], '%Y-%m-%d')
+                row[date_key] = datetime.strptime(row[date_key], '%Y-%m-%d')
                 data.append(row)
         return data
 
@@ -40,8 +49,9 @@ class WeatherReport:
         """method to get data"""
         data = []
         if file_type == 'yearly':
-            for index in self.month:
-                file_path = os.path.join(self.folderpath, f"lahore_weather_{self.year}_{index}.txt")
+            for month in self.month:
+                file_path = os.path.join(self.folder_path, f"lahore_weather_{self.year}"
+                                                           f"_{month}.txt")
                 weather_data = self.read_weather_data(file_path)
                 if weather_data:
                     data.extend(weather_data)
@@ -49,7 +59,7 @@ class WeatherReport:
 
         if file_type == 'monthly':
             month = calendar.month_abbr[int(self.month)]
-            file_path = os.path.join(self.folderpath, f"lahore_weather_{self.year}_{month}.txt")
+            file_path = os.path.join(self.folder_path, f"lahore_weather_{self.year}_{month}.txt")
             data.extend(self.read_weather_data(file_path))
         return data
 
@@ -62,13 +72,13 @@ class WeatherReport:
         lowest_temp = data[0]
         high_humidity = data[0]
 
-        for index in data:
-            if index['Max TemperatureC'] > highest_temp['Max TemperatureC']:
-                highest_temp = index
-            if index['Min TemperatureC'] < lowest_temp['Min TemperatureC']:
-                lowest_temp = index
-            if index['Max Humidity'] > high_humidity['Max Humidity']:
-                high_humidity = index
+        for temp in data:
+            if temp['Max TemperatureC'] > highest_temp['Max TemperatureC']:
+                highest_temp = temp
+            if temp['Min TemperatureC'] < lowest_temp['Min TemperatureC']:
+                lowest_temp = temp
+            if temp['Max Humidity'] > high_humidity['Max Humidity']:
+                high_humidity = temp
 
         return highest_temp, lowest_temp, high_humidity
 
@@ -81,10 +91,10 @@ class WeatherReport:
         temp_min = 0
         humidity = 0
 
-        for index in data:
-            temp_max += index['Max TemperatureC']
-            temp_min += index['Min TemperatureC']
-            humidity += index['Max Humidity']
+        for temp in data:
+            temp_max += temp['Max TemperatureC']
+            temp_min += temp['Min TemperatureC']
+            humidity += temp['Max Humidity']
 
         data_points = len(data)
         avg_temp_max = temp_max / data_points
@@ -93,20 +103,49 @@ class WeatherReport:
 
         return avg_temp_max, avg_temp_min, avg_humidity
 
-    def draw_bar_chart(self, chart_data, chart_type):
-        """method to get bar chart data"""
-        for index in chart_data:
-            date = index['PKT'].strftime('%d')
+
+class PrintReport:
+    """method to pair up all prints"""
+    def __init__(self, year, month):
+        self.year = year
+        self.month = month
+
+    def print_maxmin_temp(self, highest_temp, lowest_temp, highest_humid):
+        """method to print max,min temp and humidity"""
+        date_key = 'PKT' if 'PKT' in highest_temp else 'PKST'
+        max_date = highest_temp[date_key].strftime('%B %d')
+        low_date = lowest_temp['PKT'].strftime('%B %d')
+        high_date = highest_humid['PKT'].strftime('%B %d')
+        print(f"Highest: {highest_temp['Max TemperatureC']}C on {max_date}")
+        print(f"Lowest: {lowest_temp['Min TemperatureC']}C on {low_date}")
+        print(f"Humid: {highest_humid['Max Humidity']}% on {high_date}")
+
+    def print_avg_temp(self, avg_temp_max, avg_temp_min, avg_humidity):
+        """method to print avg temp and humidity"""
+        print(f"Highest Average: {avg_temp_max:.0f}C")
+        print(f"Lowest Average: {avg_temp_min:.0f}C")
+        print(f"Average Humidity: {avg_humidity:.0f}%")
+
+    def print_temp_chart(self, chart_data, chart_type):
+        """method to print bar chart data"""
+        for temp in chart_data:
+            date_key = 'PKT' if 'PKT' in temp else 'PKST'
+            date = temp[date_key].strftime('%d')
             if chart_type == "double-line":
-                print(f"{date} {colored('+' * index['Max TemperatureC'], 'red' )}"
-                f" {index['Max TemperatureC']}C")
-                print(f"{date} {colored('+' * index['Min TemperatureC'], 'blue')}"
-                f" {index['Min TemperatureC']}C")
+                print(f"{date} {colored('+' * temp['Max TemperatureC'], 'red' )}"
+                    f" {temp['Max TemperatureC']}C")
+                print(f"{date} {colored('+' * temp['Min TemperatureC'], 'blue')}"
+                    f" {temp['Min TemperatureC']}C")
 
             elif chart_type == "single-line":
-                print(f"{date} {colored('+' * index['Min TemperatureC'], 'blue')}"
-                f"{colored('+' * index['Max TemperatureC'], 'red')}"
-                f" {index['Min TemperatureC']}C - {index['Max TemperatureC']}C")
+                print(f"{date} {colored('+' * temp['Min TemperatureC'], 'blue')}"
+                    f"{colored('+' * temp['Max TemperatureC'], 'red')}"
+                    f" {temp['Min TemperatureC']}C - {temp['Max TemperatureC']}C")
+
+    def print_no_data_avail(self):
+        """method to print if data is not available"""
+        print(f"No data available for {self.month}/{self.year}.")
+
 
 def main():
     """Main function defines arguments and its use cases"""
@@ -114,58 +153,56 @@ def main():
     parser.add_argument("-e", "--year", type=int)
     parser.add_argument("-a", "--avg", metavar="year/month")
     parser.add_argument("-c", "--chart", metavar="year/month")
-    parser.add_argument("-cb", "--chartbar", metavar="year/month")
+    parser.add_argument("-cb", "--chart_bar", metavar="year/month")
     parser.add_argument("path", type=str, help="Path to the weather data folder")
 
     args = parser.parse_args()
-    add_zero = '{:01d}'
 
     if args.year:
-        data = WeatherReport(args.year, args.path, months)
-        if data:
-            cal_data = data.data_filepath("yearly")
-            highest_temp, lowest_temp, highest_humid = data.high_low_temp(cal_data)
-            max_date = highest_temp['PKT'].strftime('%B %d')
-            low_date = lowest_temp['PKT'].strftime('%B %d')
-            high_date = highest_humid['PKT'].strftime('%B %d')
-            print(f"Highest: {highest_temp['Max TemperatureC']}C on {max_date}")
-            print(f"Lowest: {lowest_temp['Min TemperatureC']}C on {low_date}")
-            print(f"Humid: {highest_humid['Max Humidity']}% on {high_date}")
-        else:
-            print("No data available for the specified year.")
+        yearly_data = WeatherReport(args.year, args.path, months)
+        cal_data = yearly_data.data_filepath("yearly")
+        highest_temp, lowest_temp, highest_humid = yearly_data.high_low_temp(cal_data)
+        # making an instance of a printing class and calling its method
+        maxmin_temp = PrintReport(args.year, None)
+        maxmin_temp.print_maxmin_temp(highest_temp, lowest_temp, highest_humid)
 
     elif args.avg:
         year, month = args.avg.split('/')
-        month = add_zero.format(int(month))
-        data = WeatherReport(year, args.path, month)
-        if data:
-            cal_data = data.data_filepath("monthly")
-            avg_temp_max, avg_temp_min, avg_humidity = data.average_data(cal_data)
-            print(f"Highest Average: {avg_temp_max:.0f}C")
-            print(f"Lowest Average: {avg_temp_min:.0f}C")
-            print(f"Average Humidity: {avg_humidity:.0f}%")
+        monthly_avg = WeatherReport(year, args.path, month)
+        cal_data = monthly_avg.data_filepath("monthly")
+        if cal_data:
+            avg_temp_max, avg_temp_min, avg_humidity = monthly_avg.average_data(cal_data)
+            # making an instance of a printing class and calling its method
+            avg_temp = PrintReport(year, month)
+            avg_temp.print_avg_temp(avg_temp_max, avg_temp_min, avg_humidity)
         else:
-            print(f"No data available for {month}/{year}.")
+            not_available = PrintReport(year, month)
+            not_available.print_no_data_avail()
 
     elif args.chart:
         year, month = args.chart.split('/')
-        month = add_zero.format(int(month))
-        data = WeatherReport(year, args.path, month)
-        if data:
-            print(f"{datetime.strptime(month, '%m').strftime(f'%B {year}')}")
-            data.draw_bar_chart(data.data_filepath("monthly"), chart_type="double-line")
+        chart_data = WeatherReport(year, args.path, month)
+        chart_report = chart_data.data_filepath("monthly")
+        if chart_report:
+            # making an instance of a printing class and calling its method
+            draw_chart = PrintReport(year, month)
+            draw_chart.print_temp_chart(chart_report, "double-line")
         else:
-            print(f"No data available for {month}/{year}.")
+            not_available = PrintReport(year, month)
+            not_available.print_no_data_avail()
 
-    elif args.chartbar:
-        year, month = args.chartbar.split('/')
-        month = add_zero.format(int(month))
-        data = WeatherReport(year, args.path, month)
-        if data:
-            print(f"{datetime.strptime(month, '%m').strftime(f'%B {year}')}")
-            data.draw_bar_chart(data.data_filepath("monthly"), chart_type="single-line")
+    elif args.chart_bar:
+        year, month = args.chart_bar.split('/')
+        chart_data = WeatherReport(year, args.path, month)
+        chart_report = chart_data.data_filepath("monthly")
+        if chart_report:
+            # making an instance of a printing class and calling its method
+            draw_chart = PrintReport(year, month)
+            draw_chart.print_temp_chart(chart_report, "single-line")
         else:
-            print(f"No data available for {month}/{year}.")
+            not_available = PrintReport(year, month)
+            not_available.print_no_data_avail()
+
 
 if __name__ == "__main__":
     main()
